@@ -5,5 +5,5 @@ Repository for the crash course on _"Machine learning for education policies"_ b
 The repository is organized as follows:
 * [Here] you find the slides;
 * [Here] you find the codes and datasets for the *R* applications;
-* [Here] you find the main references.
+* [Here](https://github.com/fbargaglistoffi/machine-learning-for-education-policies/tree/master/References) you find the main references.
 
