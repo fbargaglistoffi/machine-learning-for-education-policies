@@ -1,7 +1,7 @@
 #########################################################################
 ##                                                                     ##
 ##                                                                     ##
-##               Application 1: Classification Tree                    ##
+##                   Application 3: Random Forest                      ##
 ##                                                                     ##
 ##                                                                     ##
 #########################################################################
@@ -14,19 +14,20 @@ setwd("...")
 
 # Install Packages
 #install.packages("haven")
-#install.packages("rpart")
-#install.packages("ctree")
+#install.packages("randomForest")
 #install.packages("pROC")
-#install.packages("rpart.plot")
-#install.packages("rattle)
+#install.packages("ggplot2")
+#install.packages("pdp")
+#install.packages("vip")
 
 # Upload Packages
 library(haven)
-library(rpart)
-library(ctree)
+library(randomForest)
 library(pROC)
-library(rpart.plot)
-library(rattle)
+library(ggplot2)
+library(pdp)           # for partial dependence plots
+library(vip)           # for variable importance plots
+
 
 # Upload dta file
 data<- read_dta("PISA_LOW_FLS.dta")
@@ -57,47 +58,40 @@ predictors <- c("AGE", "BELANGNdum", "HEDRES","WEALTH",
 formula <- as.formula(paste("as.factor(DUMMY_LOW) ~", paste(predictors, collapse="+")))
 print(formula)
 
-# Grow an "rpart" tree
+
+# Random forest with the randomForest package
 set.seed(2020)
-dt <- rpart(formula, method = "class", data = train,
-            control = rpart.control(minsplit = nrow(train)*0.01, cp=0))
+obj_rf <- randomForest(formula, data = train,
+                    ytest = as.factor(test$DUMMY_LOW), xtest = test[predictors], 
+                    mtry=8, ntree=500, importance=TRUE)
+obj_rf
 
-printcp(dt) # display the results
-summary(dt) # detailed summary of splits
-plotcp(dt) # visualize cross-validation results
+# Variables Importance Plot
+varImpPlot(obj_rf)
+vip(obj_rf,  bar = FALSE, horizontal = FALSE)
 
-# Prune the Tree
-pruned <- prune(dt, cp = 0.0077)
+# Partial Dependecy Plot
+partial(obj_rf, pred.var="PV1MATH", plot = TRUE, rug = TRUE,
+            plot.engine = "ggplot2")
 
-# Plot tree
-plot(dt, uniform=TRUE, main="Classification Tree")
-text(dt, use.n=TRUE, all=TRUE, cex=.8)
+# 3D Partial Dependency Plot
+pd <- partial(obj_rf, pred.var = c("PV1MATH", "PV1READ")) # Compute partial dependence data
+plotPartial(pd, levelplot = FALSE, zlab = "FLS", colorkey = TRUE, 
+                    screen = list(z = -10, x = -60))
 
-# Fancier tree plot
-fancyRpartPlot(dt)
-fancyRpartPlot(pruned)
-
-# Get predicted values
-dt.pred <- predict(dt, newdata = test, type='class')
-pruned.pred <- predict(pruned, newdata = test, type='class')
-
-# Generate table that compares true outcomes of the testing set with predicted outcomes of decisiontree
-dt_tab = table(true = test$DUMMY_LOW, pred = dt.pred)
-pruned_tab = table(true = test$DUMMY_LOW, pred = pruned.pred)
-dt_tab
-pruned_tab
+# Generate table that compares true outcomes of the testing set with predicted outcomes of random forest
+rf_tab= table(true = test$DUMMY_LOW, pred = obj_rf$test$predicted)
+rf_tab
 
 # Generate ROC object based on predictions in testing set
-dt_roc = roc(test$DUMMY_LOW ~ as.double(dt.pred))
-pruned_roc = roc(test$DUMMY_LOW ~ as.double(pruned.pred))
+rf_roc=roc(test$DUMMY_LOW ~ obj_rf$test$votes[,2])
 
-# Calculate Area Under the Roc-Curve (AUC) value of predictions in testing set
-dt_auc = auc(dt_roc)
-pruned_auc = auc(pruned_roc)
-cbind(dt_auc, pruned_auc)
+# Calculate AUC value of predictions in testing set
+rf_auc=pROC::auc(rf_roc)
+rf_auc
 
 # Plot ROC
-plot(dt_roc)
+plot(rf_roc)
 
 # Alternative (Correct!) Performance Measure (F-1 Score)
 f1_score <- function(predicted, expected, positive.class) {
@@ -114,6 +108,5 @@ f1_score <- function(predicted, expected, positive.class) {
   return(f1)
 }
 
-f1_dt <- f1_score(dt.pred, test$DUMMY_LOW, "1")
-f1_pruned <- f1_score(pruned.pred, test$DUMMY_LOW, "1")
-cbind(f1_dt, f1_pruned)
+f1_rf <- f1_score(obj_rf$test$predicted, test$DUMMY_LOW, "1")
+f1_rf
