@@ -40,15 +40,15 @@ predictors <- c("PA", "ST", "TNN", "Opl", "thuisloos","trekkend", "change_school
                 "leerkracht_diploma", "leerkracht_age", "leerkracht_seniority",
                 "leerkracht_female", "directie_age", "leerkracht_unexperienced0_10",
                 "directie_unexperienced0_10", "directie_seniority")
-formula_progress_school <- as.formula(paste("as.factor(progress_school) ~", paste(predictors, collapse="+")))
+formula_progress_school <- as.formula(paste("progress_school ~", paste(predictors, collapse="+")))
 print(formula_progress_school)
-formula_certificate <- as.formula(paste("as.factor(certificate) ~", paste(predictors, collapse="+")))
+formula_certificate <- as.formula(paste("certificate ~", paste(predictors, collapse="+")))
 print(formula_certificate)
 
 
 # Causal Tree for Outcome Progress School
 tree_progress <- causalTree(formula_progress_school,
-                     data = data, treatment = TREAT,
+                     data = gok_data, treatment = gok_data$treatment,
                      split.Rule = "CT", cv.option = "CT",
                      split.Honest = T, cv.Honest = T,
                      cp = 0, minsize = 20, propensity = 0.5)
@@ -61,7 +61,7 @@ rpart.plot(tree_progress, cex=1.05,  box.palette="GnBu",
 
 # Causal Tree for Outcome Certificate
 tree_certificate <- causalTree(formula_certificate,
-                            data = data, treatment = TREAT,
+                            data = gok_data, treatment = gok_data$treatment,
                             split.Rule = "CT", cv.option = "CT",
                             split.Honest = T, cv.Honest = T,
                             cp = 0, minsize = 20, propensity = 0.5)
