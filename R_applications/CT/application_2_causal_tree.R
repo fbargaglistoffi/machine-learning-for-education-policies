@@ -48,7 +48,7 @@ print(formula_certificate)
 
 # Causal Tree for Outcome Progress School
 tree_progress <- causalTree(formula_progress_school,
-                     data = dati, treatment = TREAT,
+                     data = data, treatment = TREAT,
                      split.Rule = "CT", cv.option = "CT",
                      split.Honest = T, cv.Honest = T,
                      cp = 0, minsize = 20, propensity = 0.5)
@@ -61,7 +61,7 @@ rpart.plot(tree_progress, cex=1.05,  box.palette="GnBu",
 
 # Causal Tree for Outcome Certificate
 tree_certificate <- causalTree(formula_certificate,
-                            data = dati, treatment = TREAT,
+                            data = data, treatment = TREAT,
                             split.Rule = "CT", cv.option = "CT",
                             split.Honest = T, cv.Honest = T,
                             cp = 0, minsize = 20, propensity = 0.5)
