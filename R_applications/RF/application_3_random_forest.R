@@ -62,8 +62,7 @@ print(formula)
 # Random forest with the randomForest package
 set.seed(2020)
 obj_rf <- randomForest(formula, data = train,
-                    ytest = as.factor(test$DUMMY_LOW), xtest = test[predictors], 
-                    mtry=8, ntree=500, importance=TRUE)
+                       mtry=8, ntree=500, importance=TRUE)
 obj_rf
 
 # Variables Importance Plot
@@ -79,12 +78,17 @@ pd <- partial(obj_rf, pred.var = c("PV1MATH", "PV1READ")) # Compute partial depe
 plotPartial(pd, levelplot = FALSE, zlab = "FLS", colorkey = TRUE, 
                     screen = list(z = -10, x = -60))
 
+# Random forest for Test Data
+rf <- randomForest(formula, data = train,
+                       ytest = as.factor(test$DUMMY_LOW), xtest = test[predictors], 
+                       mtry=8, ntree=500, importance=TRUE)
+
 # Generate table that compares true outcomes of the testing set with predicted outcomes of random forest
-rf_tab= table(true = test$DUMMY_LOW, pred = obj_rf$test$predicted)
+rf_tab= table(true = test$DUMMY_LOW, pred = rf$test$predicted)
 rf_tab
 
 # Generate ROC object based on predictions in testing set
-rf_roc=roc(test$DUMMY_LOW ~ obj_rf$test$votes[,2])
+rf_roc=roc(test$DUMMY_LOW ~ rf$test$votes[,2])
 
 # Calculate AUC value of predictions in testing set
 rf_auc=pROC::auc(rf_roc)
@@ -108,5 +112,5 @@ f1_score <- function(predicted, expected, positive.class) {
   return(f1)
 }
 
-f1_rf <- f1_score(obj_rf$test$predicted, test$DUMMY_LOW, "1")
+f1_rf <- f1_score(rf$test$predicted, test$DUMMY_LOW, "1")
 f1_rf
