@@ -30,7 +30,7 @@ library(vip)           # for variable importance plots
 
 
 # Upload dta file
-data<- read_dta("PISA_LOW_FLS.dta")
+data <- read_dta("PISA_LOW_FLS.dta")
 
 # Select the Variables 
 whichvars = c("DUMMY_LOW", # Response variable
@@ -76,7 +76,7 @@ partial(obj_rf, pred.var="PV1MATH", plot = TRUE, rug = TRUE,
 # 3D Partial Dependency Plot
 pd <- partial(obj_rf, pred.var = c("PV1MATH", "PV1READ")) # Compute partial dependence data
 plotPartial(pd, levelplot = FALSE, zlab = "FLS", colorkey = TRUE, 
-                    screen = list(z = -10, x = -60))
+                    screen = list(z = -30, x = -60))
 
 # Random forest for Test Data
 rf <- randomForest(formula, data = train,

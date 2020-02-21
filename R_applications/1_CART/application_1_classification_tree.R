@@ -17,7 +17,7 @@ setwd("...")
 #install.packages("rpart")
 #install.packages("pROC")
 #install.packages("rpart.plot")
-#install.packages("rattle)
+#install.packages("rattle")
 
 # Upload Packages
 library(haven)
@@ -27,7 +27,7 @@ library(rpart.plot)
 library(rattle)
 
 # Upload dta file
-data<- read_dta("PISA_LOW_FLS.dta")
+data <- read_dta("PISA_LOW_FLS.dta")
 
 # Select the Variables 
 whichvars = c("DUMMY_LOW", # Response variable
